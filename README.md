@@ -68,19 +68,28 @@ Environment variables (`frontend/.env`):
 | -------------------- | ------------------------------------ |
 | `VITE_API_BASE_URL`  | Base URL of the backend API          |
 
-## Deployment (Render)
+## Deployment (Render — single web service)
 
-This repo includes a `render.yaml` Blueprint that provisions both services.
+The whole app deploys as **one** Render Web Service: the build compiles the
+React frontend and the Express backend serves it from the same URL, so the API
+and UI share one origin (no separate frontend service, no CORS setup needed).
 
-1. Create a free **MongoDB Atlas** cluster and copy its connection string.
-2. In Render: **New → Blueprint**, and select this repository.
-3. Set the backend `MONGODB_URI` to your Atlas connection string
-   (`JWT_SECRET` is generated automatically).
-4. Once the backend is live, set the frontend `VITE_API_BASE_URL` to the
-   backend's URL and trigger a redeploy of the frontend.
+1. Create a free **MongoDB Atlas** cluster (allow network access from
+   `0.0.0.0/0`) and copy its connection string.
+2. In Render: **New → Web Service**, connect this repo.
+3. Settings:
+   - **Root Directory:** *(leave blank)*
+   - **Runtime:** Node
+   - **Build Command:** `npm run build`
+   - **Start Command:** `npm start`
+4. Environment variables:
+   - `MONGODB_URI` = your Atlas connection string
+   - `JWT_SECRET` = any long random string
+   - (`PORT` is provided by Render automatically)
+5. Create the service. Once it's live, open the service URL — sign up and use it.
 
-> Note: the free Render web service spins down when idle, so the first request
-> after a period of inactivity may be slow.
+> The free Render web service spins down when idle, so the first request after a
+> period of inactivity may take ~30–50s.
 
 ## License
 

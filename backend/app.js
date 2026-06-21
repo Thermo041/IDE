@@ -3,6 +3,7 @@ require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
+var fs = require('fs');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require("cors");
@@ -29,6 +30,17 @@ app.use(cors());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
+// Serve the built frontend (single-service / production deployment).
+// API routes above are POST, so GET requests fall through to the SPA.
+const frontendDist = path.join(__dirname, '..', 'frontend', 'dist');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  // Send index.html for any non-API GET route so client-side routing works.
+  app.get('*', function (req, res) {
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,0 +1,15 @@
+{
+  "name": "full-stack-multi-code-ide",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Single-service deployment: builds the React frontend and runs the Express backend that serves it.",
+  "scripts": {
+    "build": "cd backend && npm install && cd ../frontend && npm install && npm run build",
+    "start": "cd backend && npm start",
+    "dev:backend": "cd backend && npm start",
+    "dev:frontend": "cd frontend && npm run dev"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
