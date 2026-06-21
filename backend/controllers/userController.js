@@ -37,24 +37,28 @@ exports.signUp = async (req, res) => {
       })
     }
 
-    bcrypt.genSalt(12, function (err, salt) {
-      bcrypt.hash(pwd, salt, async function (err, hash) {
+    let salt = await bcrypt.genSalt(12);
+    let hash = await bcrypt.hash(pwd, salt);
 
-        let user = await userModel.create({
-          email: email,
-          password: hash,
-          fullName: fullName
-        });
+    await userModel.create({
+      email: email,
+      password: hash,
+      fullName: fullName
+    });
 
-        return res.status(200).json({
-          success: true,
-          msg: "User created successfully",
-        });
-
-      });
+    return res.status(200).json({
+      success: true,
+      msg: "User created successfully",
     });
 
   } catch (error) {
+    // Handle the race where two signups with the same email slip past the check
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        msg: "Email already exist"
+      });
+    }
     res.status(500).json({
       success: false,
       msg: error.message
@@ -75,25 +79,24 @@ exports.login = async (req, res) => {
       });
     }
 
-    bcrypt.compare(pwd, user.password, function (err, result) {
-      if (result) {
+    let result = await bcrypt.compare(pwd, user.password);
+    if (result) {
 
-        let token = jwt.sign({ userId: user._id }, secret)
+      let token = jwt.sign({ userId: user._id }, secret)
 
-        return res.status(200).json({
-          success: true,
-          msg: "User logged in successfully",
-          token,
-          fullName: user.fullName
-        });
-      }
-      else {
-        return res.status(401).json({
-          success: false,
-          msg: "Invalid password"
-        });
-      }
-    })
+      return res.status(200).json({
+        success: true,
+        msg: "User logged in successfully",
+        token,
+        fullName: user.fullName
+      });
+    }
+    else {
+      return res.status(401).json({
+        success: false,
+        msg: "Invalid password"
+      });
+    }
 
   } catch (error) {
     return res.status(500).json({
